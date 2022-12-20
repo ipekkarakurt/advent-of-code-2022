@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	f, _ := os.Open("/Users/ipekkarakurt/Documents/advent-of-code-2022/day-8/input.txt")
+	f, _ := os.Open("input.txt")
 	scanner := bufio.NewScanner(f)
 
 	matrix := make([][]int, 0)

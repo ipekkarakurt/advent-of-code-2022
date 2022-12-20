@@ -9,8 +9,12 @@ import (
 	"strings"
 )
 
+type knot struct {
+	x, y int
+}
+
 func main() {
-	f, _ := os.Open("input.txt")
+	f, _ := os.Open("/Users/ipekkarakurt/Documents/advent-of-code-2022/day-9/input.txt")
 	scanner := bufio.NewScanner(f)
 
 	// matrix of bools, bool denoting whether tail has visited that cell
@@ -21,17 +25,9 @@ func main() {
 		matrix[i] = make([]bool, 10001)
 	}
 
-	var head *bool
-	var tail *bool
-	headX := 5000
-	headY := 5000
-	tailX := headX
-	tailY := headY
-	// Starting point
-	s := &matrix[headX][headY]
-	head = s
-	tail = s
-	matrix[headX][headY] = true
+	head := knot{5000, 5000}
+	tail := knot{5000, 5000}
+	matrix[head.x][head.y] = true
 	visited := 1
 
 	for scanner.Scan() {
@@ -42,17 +38,16 @@ func main() {
 		step, _ := strconv.Atoi(move[1])
 
 		for i := step; i > 0; i-- {
-			moveHead(direction, &headX, &headY, head, matrix)
+			moveHead(direction, &head.x, &head.y)
 
-			if isTouching(headX, headY, tailX, tailY) {
+			if isTouching(head.x, head.y, tail.x, tail.y) {
 				continue
 			} else {
-				moveTail(&headX, &headY, &tailX, &tailY, matrix, tail, &visited)
+				moveTail(&head.x, &head.y, &tail.x, &tail.y, matrix, &visited)
 			}
 		}
 	}
 	fmt.Println("Visited total: ", visited)
-	fmt.Println("Tail: ", tail)
 }
 
 func isTouching(headX, headY, tailX, tailY int) bool {
@@ -62,7 +57,7 @@ func isTouching(headX, headY, tailX, tailY int) bool {
 	return false
 }
 
-func moveHead(direction string, headX, headY *int, head *bool, matrix [][]bool) {
+func moveHead(direction string, headX, headY *int) {
 	// Move head
 	switch direction {
 	case "L":
@@ -74,10 +69,9 @@ func moveHead(direction string, headX, headY *int, head *bool, matrix [][]bool) 
 	case "D":
 		*headY = *headY - 1
 	}
-	head = &matrix[*headX][*headY]
 }
 
-func moveTail(headX, headY, tailX, tailY *int, matrix [][]bool, tail *bool, visited *int) {
+func moveTail(headX, headY, tailX, tailY *int, matrix [][]bool, visited *int) {
 	// Move tail
 	if *headY == *tailY && math.Abs(float64(*headX-*tailX)) == 2 {
 		if *headX > *tailX {
@@ -110,7 +104,6 @@ func moveTail(headX, headY, tailX, tailY *int, matrix [][]bool, tail *bool, visi
 			}
 		}
 	}
-	tail = &matrix[*tailX][*tailY]
 	if matrix[*tailX][*tailY] == false {
 		matrix[*tailX][*tailY] = true
 		*visited++

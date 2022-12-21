@@ -10,7 +10,8 @@ import (
 )
 
 type knot struct {
-	x, y int
+	x, y   int
+	isTail bool
 }
 
 func main() {
@@ -25,9 +26,12 @@ func main() {
 		matrix[i] = make([]bool, 10001)
 	}
 
-	head := knot{5000, 5000}
-	tail := knot{5000, 5000}
-	matrix[head.x][head.y] = true
+	knots := make([]knot, 10)
+	for i := range knots {
+		knots[i] = knot{5000, 5000, false}
+	}
+	knots[9] = knot{5000, 5000, true}
+	matrix[knots[0].x][knots[0].y] = true
 	visited := 1
 
 	for scanner.Scan() {
@@ -36,14 +40,23 @@ func main() {
 
 		direction := move[0]
 		step, _ := strconv.Atoi(move[1])
+		head := &knots[0]
 
 		for i := step; i > 0; i-- {
 			moveHead(direction, &head.x, &head.y)
 
-			if isTouching(head.x, head.y, tail.x, tail.y) {
-				continue
-			} else {
-				moveTail(&head.x, &head.y, &tail.x, &tail.y, matrix, &visited)
+			for i := 0; i < len(knots)-1; i++ {
+				newHead := head
+				if i != 0 {
+					newHead = &knots[i]
+				}
+				newTail := &knots[i+1]
+
+				if isTouching(newHead.x, newHead.y, newTail.x, newTail.y) {
+					continue
+				} else {
+					moveTail(newHead, newTail, matrix, &visited)
+				}
 			}
 		}
 	}
@@ -71,41 +84,41 @@ func moveHead(direction string, headX, headY *int) {
 	}
 }
 
-func moveTail(headX, headY, tailX, tailY *int, matrix [][]bool, visited *int) {
+func moveTail(head, tail *knot, matrix [][]bool, visited *int) {
 	// Move tail
-	if *headY == *tailY && math.Abs(float64(*headX-*tailX)) == 2 {
-		if *headX > *tailX {
-			*tailX = *tailX + 1
+	if (*head).y == (*tail).y && math.Abs(float64((*head).x-(*tail).x)) == 2 {
+		if (*head).x > (*tail).x {
+			(*tail).x = (*tail).x + 1
 		} else {
-			*tailX = *tailX - 1
+			(*tail).x = (*tail).x - 1
 		}
-	} else if *headX == *tailX && math.Abs(float64(*headY-*tailY)) == 2 {
-		if *headY > *tailY {
-			*tailY = *tailY + 1
+	} else if (*head).x == (*tail).x && math.Abs(float64((*head).y-(*tail).y)) == 2 {
+		if (*head).y > (*tail).y {
+			(*tail).y = (*tail).y + 1
 		} else {
-			*tailY = *tailY - 1
+			(*tail).y = (*tail).y - 1
 		}
-	} else if *headX != *tailX && *headY != *tailY {
-		if *headX-*tailX > 0 {
-			if *headY-*tailY > 0 {
-				*tailX = *tailX + 1
-				*tailY = *tailY + 1
+	} else if (*head).x != (*tail).x && (*head).y != (*tail).y {
+		if (*head).x-(*tail).x > 0 {
+			if (*head).y-(*tail).y > 0 {
+				(*tail).x = (*tail).x + 1
+				(*tail).y = (*tail).y + 1
 			} else {
-				*tailX = *tailX + 1
-				*tailY = *tailY - 1
+				(*tail).x = (*tail).x + 1
+				(*tail).y = (*tail).y - 1
 			}
-		} else if *headX-*tailX < 0 {
-			if *headY-*tailY > 0 {
-				*tailX = *tailX - 1
-				*tailY = *tailY + 1
+		} else if (*head).x-(*tail).x < 0 {
+			if (*head).y-(*tail).y > 0 {
+				(*tail).x = (*tail).x - 1
+				(*tail).y = (*tail).y + 1
 			} else {
-				*tailX = *tailX - 1
-				*tailY = *tailY - 1
+				(*tail).x = (*tail).x - 1
+				(*tail).y = (*tail).y - 1
 			}
 		}
 	}
-	if matrix[*tailX][*tailY] == false {
-		matrix[*tailX][*tailY] = true
+	if tail.isTail && matrix[(*tail).x][(*tail).y] == false {
+		matrix[(*tail).x][(*tail).y] = true
 		*visited++
 	}
 }

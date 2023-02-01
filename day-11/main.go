@@ -22,6 +22,7 @@ func main() {
 	scanner := bufio.NewScanner(f)
 
 	var monkeys []monkey
+	var newManager int = 1
 
 	// Skip first line for monkey index
 	for scanner.Scan() {
@@ -46,9 +47,9 @@ func main() {
 			monki.operation = func(n int) int {
 				if val != "old" {
 					valtoInt, _ := strconv.Atoi(val)
-					return (n + valtoInt) / 3
+					return n + valtoInt
 				} else {
-					return (n + n) / 3
+					return n + n
 				}
 			}
 
@@ -56,9 +57,9 @@ func main() {
 			monki.operation = func(n int) int {
 				if val != "old" {
 					valtoInt, _ := strconv.Atoi(val)
-					return (n * valtoInt) / 3
+					return n * valtoInt
 				} else {
-					return (n * n) / 3
+					return n * n
 				}
 			}
 		}
@@ -85,11 +86,15 @@ func main() {
 
 	inspections := make([]int, 8)
 
-	for i := 0; i < 20; i++ {
+	for _, monkey := range monkeys {
+		newManager = newManager * monkey.testVal
+	}
+
+	for i := 0; i < 10000; i++ {
 		for index, monk := range monkeys {
 			for _, item := range monk.items {
 				inspections[index] = inspections[index] + 1
-				outcome := monk.operation(item)
+				outcome := monk.operation(item) % newManager
 				if outcome%monk.testVal == 0 {
 					monkeys[monk.ifTrue].items = append(monkeys[monk.ifTrue].items, outcome)
 				} else {
@@ -101,5 +106,5 @@ func main() {
 	}
 
 	sort.Ints(inspections)
-	fmt.Println("First part : ", inspections[7]*inspections[6])
+	fmt.Println("Second part : ", inspections[7]*inspections[6])
 }
